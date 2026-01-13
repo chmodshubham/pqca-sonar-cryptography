@@ -104,6 +104,30 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>LICENSE*</exclude>
                                         <exclude>NOTICE*</exclude>
+                                        <!-- Exclude large unused LLVM binaries to save space -->
+                                        <exclude>**/*.exe</exclude>
+                                        <exclude>**/*.pdb</exclude>
+                                        <exclude>**/*.obj</exclude>
+                                        <exclude>**/bin/*</exclude>
+                                        <!-- specific large binaries if they don't match *.exe (linux/mac) -->
+                                        <exclude>org/bytedeco/llvm/**/clang-scan-deps*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/lld*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/llc*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/llvm-*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/dsymutil*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/bugpoint*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/c-index-test*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/diagtool*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/find-all-symbols*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/hmaptool*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/modularize*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/obj2yaml*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/opt*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/sancov*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/sanstats*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/verify-uselistorder*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/yaml2obj*</exclude>
+                                        <exclude>org/bytedeco/llvm/**/libLTO.*</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
