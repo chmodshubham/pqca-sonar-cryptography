@@ -19,6 +19,7 @@
  */
 package com.ibm.plugin;
 
+import java.util.Objects;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.sonar.api.Plugin;
@@ -32,13 +33,14 @@ import org.sonar.api.utils.Version;
 class PluginTest {
 
     @Test
+    @SuppressWarnings("null")
     void testExtensions() {
         SonarRuntime runtime =
                 SonarRuntimeImpl.forSonarQube(
-                        Version.create(9, 5), SonarQubeSide.SCANNER, SonarEdition.COMMUNITY);
+                        Objects.requireNonNull(Version.create(9, 5)), SonarQubeSide.SCANNER, SonarEdition.COMMUNITY);
         Plugin.Context context = new PluginContextImpl.Builder().setSonarRuntime(runtime).build();
         CryptographyPlugin plugin = new CryptographyPlugin();
         plugin.define(context);
-        Assertions.assertEquals(6, context.getExtensions().size());
+        Assertions.assertEquals(7, context.getExtensions().size());
     }
 }
