@@ -31,6 +31,18 @@
         </dependency>
         <dependency>
             <groupId>com.ibm</groupId>
+            <artifactId>cpp</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.sonarsource.sonarqube</groupId>
+            <artifactId>sonar-plugin-api-impl</artifactId>
+            <version>${sonar.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm</groupId>
             <artifactId>python</artifactId>
             <version>2.0.0-SNAPSHOT</version>
             <scope>compile</scope>
@@ -59,7 +71,9 @@
                     <pluginName>Sonar Crypto Plugin</pluginName>
                     <pluginClass>com.ibm.plugin.CryptographyPlugin</pluginClass>
                     <!-- This line must specify all file extensions which should be scanned by the plugin -->
-                    <requiredForLanguages>java,jsp,py,ipynb</requiredForLanguages>
+                    <requiredForLanguages>java,jsp,py,ipynb,c,cpp,cxx,cc,h,hpp</requiredForLanguages>
+                    <!-- This line must specify the plugin key -->
+                    <pluginKey>cryptography</pluginKey>
                     <pluginApiMinVersion>${sonar.minVersion}</pluginApiMinVersion>
                     <sonarLintSupported>true</sonarLintSupported>
                     <skipDependenciesPackaging>true</skipDependenciesPackaging>

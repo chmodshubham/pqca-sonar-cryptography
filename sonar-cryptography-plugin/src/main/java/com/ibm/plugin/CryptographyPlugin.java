@@ -45,6 +45,8 @@ public class CryptographyPlugin implements Plugin {
                 // python
                 PythonScannerRuleDefinition.class, // Define Rules
                 PythonCheckRegistrar.class, // Register Python rules by sonar-python sensor
+                // c++
+                com.ibm.plugin.cpp.CppCustomRulesDefinition.class, // Register C++ rules definition
                 // general
                 OutputFileJob.class);
     }

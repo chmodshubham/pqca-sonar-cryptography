@@ -52,4 +52,14 @@ public final class LanguageSupporter {
             pythonLanguageSupporter() {
         return new PythonLanguageSupport();
     }
+
+    @Nonnull
+    public static ILanguageSupport<
+                    Object,
+                    org.bytedeco.llvm.clang.CXCursor,
+                    org.bytedeco.llvm.clang.CXCursor,
+                    Object>
+            cppLanguageSupporter() {
+        return new com.ibm.engine.language.cpp.CppLanguageSupport();
+    }
 }

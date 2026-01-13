@@ -18,6 +18,7 @@
         <module>enricher</module>
         <module>sonar-cryptography-plugin</module>
         <module>rules</module>
+        <module>cpp</module>
     </modules>
 
     <version>2.0.0-SNAPSHOT</version>
@@ -48,6 +49,8 @@
         <!-- language parser versions -->
         <sonar.java.version>8.18.0.40025</sonar.java.version>
         <sonar.python.version>5.9.0.25193</sonar.python.version>
+        <javacpp.version>1.5.12</javacpp.version>
+        <llvm.version>20.1.7-1.5.12</llvm.version>
 
         <google-java-format.version>1.28.0</google-java-format.version>
     </properties>
@@ -85,6 +88,11 @@
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
           <version>2.0.17</version>
+        </dependency>
+        <dependency>
+          <groupId>org.bytedeco</groupId>
+          <artifactId>llvm-platform</artifactId>
+          <version>${llvm.version}</version>
         </dependency>
       </dependencies>
     </dependencyManagement>
