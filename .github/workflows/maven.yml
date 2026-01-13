@@ -43,6 +43,6 @@ jobs:
         path: ${{ steps.cbom.outputs.pattern }}
         if-no-files-found: warn
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
-    - name: Update dependency graph
-      uses: advanced-security/maven-dependency-submission-action@v5
-      if: github.event_name != 'pull_request'
+    #- name: Update dependency graph
+    #  uses: advanced-security/maven-dependency-submission-action@v5
+    #  if: github.event_name != 'pull_request'

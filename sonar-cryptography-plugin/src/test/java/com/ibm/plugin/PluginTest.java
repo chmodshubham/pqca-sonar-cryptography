@@ -37,7 +37,9 @@ class PluginTest {
     void testExtensions() {
         SonarRuntime runtime =
                 SonarRuntimeImpl.forSonarQube(
-                        Objects.requireNonNull(Version.create(9, 5)), SonarQubeSide.SCANNER, SonarEdition.COMMUNITY);
+                        Objects.requireNonNull(Version.create(9, 5)),
+                        SonarQubeSide.SCANNER,
+                        SonarEdition.COMMUNITY);
         Plugin.Context context = new PluginContextImpl.Builder().setSonarRuntime(runtime).build();
         CryptographyPlugin plugin = new CryptographyPlugin();
         plugin.define(context);
