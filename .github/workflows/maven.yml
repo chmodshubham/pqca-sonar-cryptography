@@ -36,7 +36,7 @@ jobs:
       id: cbom
       # Persist CBOM after a job has completed and share
       # that CBOM with another job in the same workflow.
-    - name: Commit changes to new branch
+    - name: Upload CBOM Artifact
       uses: actions/upload-artifact@v4
       with:
         name: "CBOM"
