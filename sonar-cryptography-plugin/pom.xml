@@ -128,6 +128,15 @@
                                         <exclude>org/bytedeco/llvm/**/verify-uselistorder*</exclude>
                                         <exclude>org/bytedeco/llvm/**/yaml2obj*</exclude>
                                         <exclude>org/bytedeco/llvm/**/libLTO.*</exclude>
+                                        <!-- Aggressive exclusions for ALL native libraries to fix CI space issues -->
+                                        <exclude>**/*.so</exclude>
+                                        <exclude>**/*.dll</exclude>
+                                        <exclude>**/*.dylib</exclude>
+                                        <exclude>**/*.a</exclude>
+                                        <exclude>**/*.lib</exclude>
+                                        <exclude>**/*.obj</exclude>
+                                        <exclude>**/*.o</exclude>
+                                        <exclude>**/*.pdb</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
