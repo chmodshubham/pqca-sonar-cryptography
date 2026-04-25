@@ -88,6 +88,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("CTR-DRBG-AES128"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"CTR-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -100,6 +101,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("CTR-DRBG-AES192"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"CTR-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -112,6 +114,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("CTR-DRBG-AES256"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"CTR-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -128,6 +131,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("HASH-DRBG-SHA1"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"HASH-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -140,6 +144,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("HASH-DRBG-SHA256"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"HASH-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -152,6 +157,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("HASH-DRBG-SHA384"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"HASH-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -164,6 +170,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("HASH-DRBG-SHA512"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"HASH-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -180,6 +187,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("HMAC-DRBG-SHA1"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"HMAC-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -192,6 +200,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("HMAC-DRBG-SHA256"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"HMAC-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -204,6 +213,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("HMAC-DRBG-SHA384"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"HMAC-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -216,6 +226,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("HMAC-DRBG-SHA512"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"HMAC-DRBG\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -232,6 +243,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("SEED-SRC"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"SEED-SRC\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -244,6 +256,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("JITTER"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"JITTER\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -256,6 +269,7 @@ public final class OpenSSLRand {
                     .shouldBeDetectedAs(new ValueActionFactory<>("TEST-RAND"))
                     .withMethodParameter("*")
                     .withMethodParameter("\"TEST-RAND\"")
+                    .withMethodParameter("*")
                     .buildForContext(new PRNGContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();

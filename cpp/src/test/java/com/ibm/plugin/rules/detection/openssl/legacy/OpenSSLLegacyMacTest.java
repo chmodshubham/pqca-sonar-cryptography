@@ -17,13 +17,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.plugin.rules.detection.openssl.digest;
+package com.ibm.plugin.rules.detection.openssl.legacy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ibm.engine.detection.DetectionStore;
 import com.ibm.engine.model.IValue;
-import com.ibm.engine.model.context.DigestContext;
+import com.ibm.engine.model.ValueAction;
+import com.ibm.engine.model.context.MacContext;
 import com.ibm.mapper.model.INode;
 import com.ibm.plugin.CxxVerifier;
 import com.ibm.plugin.TestBase;
@@ -36,11 +37,21 @@ import org.sonar.cxx.squidbridge.SquidAstVisitorContext;
 import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
-class OpenSSLEvpDigestTest extends TestBase {
+/**
+ * Covers all 13 rule entries in {@link OpenSSLLegacyMac}.
+ *
+ * <p>Follows the deep-assert pattern documented in {@link
+ * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
+ *
+ * <p>Note: {@code CxxMacContextTranslator} only translates hash-suffixed MAC names (e.g. {@code
+ * HMAC-SHA256}). The bare values {@code "HMAC"} and {@code "CMAC"} emitted by the legacy rules have
+ * no translator case and yield empty translated nodes — there is no INode tree to walk.
+ */
+class OpenSSLLegacyMacTest extends TestBase {
 
     @Test
     void test() {
-        CxxVerifier.verify("rules/detection/openssl/digest/OpenSSLEvpDigestTestFile.cc", this);
+        CxxVerifier.verify("rules/detection/openssl/legacy/OpenSSLLegacyMacTestFile.cc", this);
     }
 
     @Override
@@ -54,17 +65,24 @@ class OpenSSLEvpDigestTest extends TestBase {
                                     SquidAstVisitorContext<? extends Grammar>>
                             detectionStore,
             @Nonnull List<INode> nodes) {
-        /*
-         * Detection Store
-         */
         assertThat(detectionStore.getDetectionValues()).hasSize(1);
+        assertThat(detectionStore.getDetectionValueContext()).isInstanceOf(MacContext.class);
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
-        assertThat(detectionStore.getDetectionValueContext()).isInstanceOf(DigestContext.class);
-        assertThat(value.asString()).isEqualTo("SHA-256");
+        assertThat(value).isInstanceOf(ValueAction.class);
 
-        /*
-         * Translation
-         */
-        assertThat(nodes).isNotEmpty();
+        switch (findingId) {
+            case 0, 1, 2, 3, 4, 5, 6, 7 -> {
+                // HMAC_CTX_new, HMAC_CTX_reset, HMAC_CTX_copy, HMAC_Init_ex, HMAC_Init,
+                // HMAC_Update, HMAC_Final, HMAC
+                assertThat(value.asString()).isEqualTo("HMAC");
+                assertThat(nodes).isEmpty();
+            }
+            case 8, 9, 10, 11, 12 -> {
+                // CMAC_CTX_new, CMAC_Init, CMAC_Update, CMAC_Final, CMAC_resume
+                assertThat(value.asString()).isEqualTo("CMAC");
+                assertThat(nodes).isEmpty();
+            }
+            default -> throw new AssertionError("Unexpected findingId: " + findingId);
+        }
     }
 }

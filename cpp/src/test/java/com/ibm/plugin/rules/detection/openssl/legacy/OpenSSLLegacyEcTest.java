@@ -23,14 +23,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ibm.engine.detection.DetectionStore;
 import com.ibm.engine.model.IValue;
-import com.ibm.engine.model.context.CipherContext;
+import com.ibm.engine.model.context.KeyAgreementContext;
 import com.ibm.engine.model.context.KeyContext;
 import com.ibm.engine.model.context.SignatureContext;
 import com.ibm.mapper.model.INode;
+import com.ibm.mapper.model.KeyAgreement;
 import com.ibm.mapper.model.Oid;
-import com.ibm.mapper.model.PublicKeyEncryption;
 import com.ibm.mapper.model.Signature;
-import com.ibm.mapper.model.algorithms.RSA;
+import com.ibm.mapper.model.algorithms.ECDH;
+import com.ibm.mapper.model.algorithms.ECDSA;
 import com.ibm.plugin.CxxVerifier;
 import com.ibm.plugin.TestBase;
 import com.sonar.cxx.sslr.api.AstNode;
@@ -43,18 +44,16 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 19 rule entries in {@link OpenSSLLegacyRsa}.
+ * Covers all 20 rule entries in {@link OpenSSLLegacyEc}.
  *
  * <p>Follows the deep-assert pattern documented in {@link
  * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
  */
-class OpenSSLLegacyRsaTest extends TestBase {
-
-    private static final String RSA_OID = "1.2.840.113549.1.1.1";
+class OpenSSLLegacyEcTest extends TestBase {
 
     @Test
     void test() {
-        CxxVerifier.verify("rules/detection/openssl/legacy/OpenSSLLegacyRsaTestFile.cc", this);
+        CxxVerifier.verify("rules/detection/openssl/legacy/OpenSSLLegacyEcTestFile.cc", this);
     }
 
     @Override
@@ -72,77 +71,80 @@ class OpenSSLLegacyRsaTest extends TestBase {
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
 
         switch (findingId) {
-            case 0, 1, 2 -> {
+            case 0, 1, 2, 3, 4, 5 -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("RSA");
-                assertRsaPke(nodes);
+                assertThat(value.asString()).isEqualTo("EC");
+                assertEcdsa(nodes);
             }
-            case 3 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(CipherContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-ENCRYPT");
-                assertThat(nodes).isEmpty();
-            }
-            case 4 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(CipherContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-DECRYPT");
-                assertThat(nodes).isEmpty();
-            }
-            case 5, 7, 9 -> {
+            case 6, 8, 10, 11, 12 -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-SIGN");
-                assertRsaSig(nodes);
+                assertThat(value.asString()).isEqualTo("ECDSA-SIGN");
+                assertEcdsa(nodes);
             }
-            case 6, 8, 10 -> {
+            case 7, 9 -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-VERIFY");
-                assertRsaSig(nodes);
+                assertThat(value.asString()).isEqualTo("ECDSA-VERIFY");
+                assertEcdsa(nodes);
             }
-            case 11, 12 -> {
+            case 13 -> {
+                assertThat(detectionStore.getDetectionValueContext())
+                        .isInstanceOf(SignatureContext.class);
+                assertThat(value.asString()).isEqualTo("ECDSA");
+                assertThat(nodes).isEmpty();
+            }
+            case 14 -> {
+                assertThat(detectionStore.getDetectionValueContext())
+                        .isInstanceOf(KeyAgreementContext.class);
+                assertThat(value.asString()).isEqualTo("ECDH");
+                assertEcdh(nodes);
+            }
+            case 15 -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("RSA");
-                assertRsaPke(nodes);
+                assertThat(value.asString()).isEqualTo("EC");
+                assertEcdsa(nodes);
             }
-            case 13, 14, 15, 16 -> {
+            case 16 -> {
                 assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-PSS");
-                assertRsaSig(nodes);
-            }
-            case 17, 18 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(CipherContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-OAEP");
+                        .isInstanceOf(KeyContext.class);
+                assertThat(value.asString()).isEqualTo("EC-GFP");
                 assertThat(nodes).isEmpty();
+            }
+            case 17 -> {
+                assertThat(detectionStore.getDetectionValueContext())
+                        .isInstanceOf(KeyContext.class);
+                assertThat(value.asString()).isEqualTo("EC-GF2M");
+                assertThat(nodes).isEmpty();
+            }
+            case 18, 19 -> {
+                assertThat(detectionStore.getDetectionValueContext())
+                        .isInstanceOf(KeyContext.class);
+                assertThat(value.asString()).isEqualTo("EC");
+                assertEcdsa(nodes);
             }
             default -> throw new AssertionError("Unexpected findingId: " + findingId);
         }
     }
 
-    private static void assertRsaPke(List<INode> nodes) {
+    private static void assertEcdsa(List<INode> nodes) {
         assertThat(nodes).hasSize(1);
         INode n = nodes.get(0);
-        assertThat(n).isInstanceOf(RSA.class);
-        assertThat(n.getKind()).isEqualTo(PublicKeyEncryption.class);
-        assertThat(n.asString()).isEqualTo("RSA");
-        INode oid = n.getChildren().get(Oid.class);
-        assertThat(oid).isNotNull();
-        assertThat(oid.asString()).isEqualTo(RSA_OID);
+        assertThat(n).isInstanceOf(ECDSA.class);
+        assertThat(n.getKind()).isEqualTo(Signature.class);
+        assertThat(n.asString()).isEqualTo("ECDSA");
     }
 
-    private static void assertRsaSig(List<INode> nodes) {
+    private static void assertEcdh(List<INode> nodes) {
         assertThat(nodes).hasSize(1);
         INode n = nodes.get(0);
-        assertThat(n).isInstanceOf(RSA.class);
-        assertThat(n.getKind()).isEqualTo(Signature.class);
-        assertThat(n.asString()).isEqualTo("RSA");
+        assertThat(n).isInstanceOf(ECDH.class);
+        assertThat(n.getKind()).isEqualTo(KeyAgreement.class);
+        assertThat(n.asString()).isEqualTo("ECDH");
         INode oid = n.getChildren().get(Oid.class);
         assertThat(oid).isNotNull();
-        assertThat(oid.asString()).isEqualTo(RSA_OID);
+        assertThat(oid.asString()).isEqualTo("1.3.132.1.12");
     }
 }

@@ -33,6 +33,14 @@ import javax.annotation.Nonnull;
  * <p>These rules detect key agreement/exchange operations through EVP_PKEY_derive and related
  * functions. Covers Diffie-Hellman (DH), Elliptic Curve Diffie-Hellman (ECDH), X25519/X448,
  * post-quantum ML-KEM (Kyber), and SM2.
+ *
+ * <p><b>Note on {@code EVP_PKEY_CTX_new_id} argument matching.</b> {@code EVP_PKEY_DH}, {@code
+ * EVP_PKEY_EC}, {@code EVP_PKEY_X25519}, {@code EVP_PKEY_X448} are C preprocessor macros defined in
+ * {@code <openssl/evp.h>} that expand to NID integer constants 28, 408, 1034, 1035 (via {@code
+ * NID_dhKeyAgreement} etc. in {@code <openssl/obj_mac.h>}). sonar-cxx runs the preprocessor before
+ * AST construction, so rules here match the integer literal the scanner actually sees. Analogous to
+ * the Java plugin matching on {@code argument.symbolType()} post-compilation rather than the
+ * original source token.
  */
 @SuppressWarnings("java:S1192")
 public final class OpenSSLEvpKeyAgreement {
@@ -60,7 +68,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("DH-2048"))
-                    .withMethodParameter("EVP_PKEY_DH")
+                    .withMethodParameter("28")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -71,7 +80,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("DH-3072"))
-                    .withMethodParameter("EVP_PKEY_DH")
+                    .withMethodParameter("28")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -82,7 +92,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("DH-4096"))
-                    .withMethodParameter("EVP_PKEY_DH")
+                    .withMethodParameter("28")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -108,7 +119,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("ECDH-P256"))
-                    .withMethodParameter("EVP_PKEY_EC")
+                    .withMethodParameter("408")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -119,7 +131,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("ECDH-P384"))
-                    .withMethodParameter("EVP_PKEY_EC")
+                    .withMethodParameter("408")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -130,7 +143,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("ECDH-P521"))
-                    .withMethodParameter("EVP_PKEY_EC")
+                    .withMethodParameter("408")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -141,7 +155,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("ECDH-SECP256K1"))
-                    .withMethodParameter("EVP_PKEY_EC")
+                    .withMethodParameter("408")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -152,7 +167,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("ECDH-BRAINPOOLP256R1"))
-                    .withMethodParameter("EVP_PKEY_EC")
+                    .withMethodParameter("408")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -163,7 +179,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("ECDH-BRAINPOOLP384R1"))
-                    .withMethodParameter("EVP_PKEY_EC")
+                    .withMethodParameter("408")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -174,7 +191,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("ECDH-BRAINPOOLP512R1"))
-                    .withMethodParameter("EVP_PKEY_EC")
+                    .withMethodParameter("408")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -200,7 +218,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("X25519"))
-                    .withMethodParameter("EVP_PKEY_X25519")
+                    .withMethodParameter("1034")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -222,7 +241,8 @@ public final class OpenSSLEvpKeyAgreement {
                     .forObjectTypes("*")
                     .forMethods("EVP_PKEY_CTX_new_id")
                     .shouldBeDetectedAs(new ValueActionFactory<>("X448"))
-                    .withMethodParameter("EVP_PKEY_X448")
+                    .withMethodParameter("1035")
+                    .withMethodParameter("*")
                     .buildForContext(new KeyAgreementContext())
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();

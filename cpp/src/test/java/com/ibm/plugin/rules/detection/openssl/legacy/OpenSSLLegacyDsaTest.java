@@ -23,14 +23,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ibm.engine.detection.DetectionStore;
 import com.ibm.engine.model.IValue;
-import com.ibm.engine.model.context.CipherContext;
+import com.ibm.engine.model.ValueAction;
 import com.ibm.engine.model.context.KeyContext;
 import com.ibm.engine.model.context.SignatureContext;
 import com.ibm.mapper.model.INode;
 import com.ibm.mapper.model.Oid;
-import com.ibm.mapper.model.PublicKeyEncryption;
 import com.ibm.mapper.model.Signature;
-import com.ibm.mapper.model.algorithms.RSA;
+import com.ibm.mapper.model.algorithms.DSA;
 import com.ibm.plugin.CxxVerifier;
 import com.ibm.plugin.TestBase;
 import com.sonar.cxx.sslr.api.AstNode;
@@ -43,18 +42,18 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 19 rule entries in {@link OpenSSLLegacyRsa}.
+ * Covers all 12 rule entries in {@link OpenSSLLegacyDsa}.
  *
  * <p>Follows the deep-assert pattern documented in {@link
  * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
  */
-class OpenSSLLegacyRsaTest extends TestBase {
+class OpenSSLLegacyDsaTest extends TestBase {
 
-    private static final String RSA_OID = "1.2.840.113549.1.1.1";
+    private static final String DSA_OID = "1.2.840.10040.4.1";
 
     @Test
     void test() {
-        CxxVerifier.verify("rules/detection/openssl/legacy/OpenSSLLegacyRsaTestFile.cc", this);
+        CxxVerifier.verify("rules/detection/openssl/legacy/OpenSSLLegacyDsaTestFile.cc", this);
     }
 
     @Override
@@ -68,81 +67,62 @@ class OpenSSLLegacyRsaTest extends TestBase {
                                     SquidAstVisitorContext<? extends Grammar>>
                             detectionStore,
             @Nonnull List<INode> nodes) {
+        assertThat(detectionStore).isNotNull();
         assertThat(detectionStore.getDetectionValues()).hasSize(1);
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
+        assertThat(value).isInstanceOf(ValueAction.class);
 
         switch (findingId) {
             case 0, 1, 2 -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("RSA");
-                assertRsaPke(nodes);
+                assertThat(value.asString()).isEqualTo("DSA");
+                assertDsa(nodes);
             }
-            case 3 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(CipherContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-ENCRYPT");
-                assertThat(nodes).isEmpty();
-            }
-            case 4 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(CipherContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-DECRYPT");
-                assertThat(nodes).isEmpty();
-            }
-            case 5, 7, 9 -> {
+            case 3, 4, 6 -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-SIGN");
-                assertRsaSig(nodes);
+                assertThat(value.asString()).isEqualTo("DSA-SIGN");
+                assertDsa(nodes);
             }
-            case 6, 8, 10 -> {
+            case 5, 7 -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-VERIFY");
-                assertRsaSig(nodes);
+                assertThat(value.asString()).isEqualTo("DSA-VERIFY");
+                assertDsa(nodes);
             }
-            case 11, 12 -> {
+            case 8 -> {
+                // DSA_size — translator returns empty
+                assertThat(detectionStore.getDetectionValueContext())
+                        .isInstanceOf(SignatureContext.class);
+                assertThat(value.asString()).isEqualTo("DSA");
+                assertThat(nodes).isEmpty();
+            }
+            case 9, 10 -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("RSA");
-                assertRsaPke(nodes);
+                assertThat(value.asString()).isEqualTo("DSA");
+                assertDsa(nodes);
             }
-            case 13, 14, 15, 16 -> {
+            case 11 -> {
+                // DSA_dup_DH — "DSA-DH"; no translator case
                 assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-PSS");
-                assertRsaSig(nodes);
-            }
-            case 17, 18 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(CipherContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-OAEP");
+                        .isInstanceOf(KeyContext.class);
+                assertThat(value.asString()).isEqualTo("DSA-DH");
                 assertThat(nodes).isEmpty();
             }
             default -> throw new AssertionError("Unexpected findingId: " + findingId);
         }
     }
 
-    private static void assertRsaPke(List<INode> nodes) {
+    private static void assertDsa(List<INode> nodes) {
         assertThat(nodes).hasSize(1);
         INode n = nodes.get(0);
-        assertThat(n).isInstanceOf(RSA.class);
-        assertThat(n.getKind()).isEqualTo(PublicKeyEncryption.class);
-        assertThat(n.asString()).isEqualTo("RSA");
-        INode oid = n.getChildren().get(Oid.class);
-        assertThat(oid).isNotNull();
-        assertThat(oid.asString()).isEqualTo(RSA_OID);
-    }
-
-    private static void assertRsaSig(List<INode> nodes) {
-        assertThat(nodes).hasSize(1);
-        INode n = nodes.get(0);
-        assertThat(n).isInstanceOf(RSA.class);
+        assertThat(n).isInstanceOf(DSA.class);
         assertThat(n.getKind()).isEqualTo(Signature.class);
-        assertThat(n.asString()).isEqualTo("RSA");
+        assertThat(n.asString()).isEqualTo("DSA");
         INode oid = n.getChildren().get(Oid.class);
         assertThat(oid).isNotNull();
-        assertThat(oid.asString()).isEqualTo(RSA_OID);
+        assertThat(oid.asString()).isEqualTo(DSA_OID);
     }
 }

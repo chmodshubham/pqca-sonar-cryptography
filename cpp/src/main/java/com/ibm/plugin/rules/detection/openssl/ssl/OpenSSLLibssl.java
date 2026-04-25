@@ -486,13 +486,20 @@ public final class OpenSSLLibssl {
      * org.sonar.cxx.utils.CxxConstantUtils} to resolve constants like TLS1_2_VERSION (0x0303) to
      * actual integer values, then maps them to version strings like "TLSv1.2".
      */
+    // Note: `SSL_CTX_set_min_proto_version(ctx, version)` is a macro in openssl/ssl.h that
+    // expands to `SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MIN_PROTO_VERSION, version, NULL)`. The
+    // preprocessor runs before sonar-cxx builds the AST, so we match the expanded form.
+    // SSL_CTRL_SET_MIN_PROTO_VERSION is #defined as 123 in openssl/ssl.h.
     private static final IDetectionRule<AstNode> SSL_CTX_SET_MIN_PROTO_VERSION =
             new DetectionRuleBuilder<AstNode>()
                     .createDetectionRule()
                     .forObjectTypes("*")
-                    .forMethods("SSL_CTX_set_min_proto_version")
+                    .forMethods("SSL_CTX_ctrl")
                     .shouldBeDetectedAs(new OpenSSLVersionDetectionFactory("MIN"))
-                    .withAnyParameters()
+                    .withMethodParameter("*")
+                    .withMethodParameter("123")
+                    .withMethodParameter("*")
+                    .withMethodParameter("*")
                     .buildForContext(new ProtocolContext(ProtocolContext.Kind.TLS))
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
@@ -507,13 +514,18 @@ public final class OpenSSLLibssl {
      * org.sonar.cxx.utils.CxxConstantUtils} to resolve constants like TLS1_3_VERSION (0x0304) to
      * actual integer values, then maps them to version strings like "TLSv1.3".
      */
+    // Same macro-expansion handling as SSL_CTX_SET_MIN_PROTO_VERSION above.
+    // SSL_CTRL_SET_MAX_PROTO_VERSION is #defined as 124 in openssl/ssl.h.
     private static final IDetectionRule<AstNode> SSL_CTX_SET_MAX_PROTO_VERSION =
             new DetectionRuleBuilder<AstNode>()
                     .createDetectionRule()
                     .forObjectTypes("*")
-                    .forMethods("SSL_CTX_set_max_proto_version")
+                    .forMethods("SSL_CTX_ctrl")
                     .shouldBeDetectedAs(new OpenSSLVersionDetectionFactory("MAX"))
-                    .withAnyParameters()
+                    .withMethodParameter("*")
+                    .withMethodParameter("124")
+                    .withMethodParameter("*")
+                    .withMethodParameter("*")
                     .buildForContext(new ProtocolContext(ProtocolContext.Kind.TLS))
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();

@@ -1,5 +1,34 @@
+#include <openssl/evp.h>
 #include <openssl/kdf.h>
 
 void test_evp_kdf() {
-    EVP_KDF *kdf = EVP_KDF_fetch(NULL, "PBKDF2", NULL); // Noncompliant {{PBKDF2-HMAC-SHA1}}
+    OSSL_LIB_CTX* lib = NULL;
+    const char* props = NULL;
+    unsigned char buf[64];
+
+    // EVP_KDF_fetch — 18 unique strings, 41 rules fire across these calls
+    EVP_KDF_fetch(lib, "PBKDF2", props);
+    EVP_KDF_fetch(lib, "HKDF", props);
+    EVP_KDF_fetch(lib, "SCRYPT", props);
+    EVP_KDF_fetch(lib, "TLS1-PRF", props);
+    EVP_KDF_fetch(lib, "TLS13-KDF", props);
+    EVP_KDF_fetch(lib, "X963KDF", props);
+    EVP_KDF_fetch(lib, "KBKDF", props);
+    EVP_KDF_fetch(lib, "X942KDF-ASN1", props);
+    EVP_KDF_fetch(lib, "X942KDF-CONCAT", props);
+    EVP_KDF_fetch(lib, "SSKDF", props);
+    EVP_KDF_fetch(lib, "SSHKDF", props);
+    EVP_KDF_fetch(lib, "KRB5KDF", props);
+    EVP_KDF_fetch(lib, "ARGON2D", props);
+    EVP_KDF_fetch(lib, "ARGON2I", props);
+    EVP_KDF_fetch(lib, "ARGON2ID", props);
+    EVP_KDF_fetch(lib, "PKCS12KDF", props);
+    EVP_KDF_fetch(lib, "PVKKDF", props);
+    EVP_KDF_fetch(lib, "HMAC-DRBG-KDF", props);
+
+    // Direct PBKDF1/PBKDF2 — 4 rules
+    PKCS5_PBKDF1_MD5((char*)buf, 8, buf, 16, 1000, 32, buf);
+    PKCS5_PBKDF1_SHA1((char*)buf, 8, buf, 16, 1000, 32, buf);
+    PKCS5_PBKDF2_HMAC((char*)buf, 8, buf, 16, 1000, NULL, 32, buf);
+    PKCS5_PBKDF2_HMAC_SHA1((char*)buf, 8, buf, 16, 1000, 32, buf);
 }
