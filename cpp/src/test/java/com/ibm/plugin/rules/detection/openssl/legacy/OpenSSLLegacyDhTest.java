@@ -42,7 +42,7 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 15 rule entries in {@link OpenSSLLegacyDh}.
+ * Covers all 18 rule entries in {@link OpenSSLLegacyDh}.
  *
  * <p>Follows the deep-assert pattern documented in {@link
  * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
@@ -70,39 +70,24 @@ class OpenSSLLegacyDhTest extends TestBase {
         assertThat(detectionStore.getDetectionValues()).hasSize(1);
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
 
-        switch (findingId) {
-            case 0, 1, 2, 3, 4, 5, 6 -> {
-                // DH_new, DH_generate_parameters_ex, DH_generate_key, DH_check,
-                // DH_check_params_ex, DH_check_ex, DH_check_pub_key_ex
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("DH");
+        String v = value.asString();
+        if (v.equals("DH")) {
+            if (detectionStore.getDetectionValueContext() instanceof KeyContext) {
                 assertDhPke(nodes);
-            }
-            case 7, 8 -> {
-                // DH_compute_key, DH_compute_key_padded
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyAgreementContext.class);
-                assertThat(value.asString()).isEqualTo("DH");
+            } else if (detectionStore.getDetectionValueContext() instanceof KeyAgreementContext) {
                 assertDhKa(nodes);
+            } else {
+                throw new AssertionError(
+                        "Unexpected context for DH: " + detectionStore.getDetectionValueContext());
             }
-            case 9 -> {
-                assertNamedGroupSkipped(detectionStore, value, nodes, "DH-1024-160");
-            }
-            case 10 -> {
-                assertNamedGroupSkipped(detectionStore, value, nodes, "DH-2048-224");
-            }
-            case 11 -> {
-                assertNamedGroupSkipped(detectionStore, value, nodes, "DH-2048-256");
-            }
-            case 12, 13, 14 -> {
-                // DH_size, DH_bits, DH_security_bits
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("DH");
-                assertDhPke(nodes);
-            }
-            default -> throw new AssertionError("Unexpected findingId: " + findingId);
+        } else if (v.equals("DH-1024-160")) {
+            assertNamedGroupSkipped(detectionStore, value, nodes, "DH-1024-160");
+        } else if (v.equals("DH-2048-224")) {
+            assertNamedGroupSkipped(detectionStore, value, nodes, "DH-2048-224");
+        } else if (v.equals("DH-2048-256")) {
+            assertNamedGroupSkipped(detectionStore, value, nodes, "DH-2048-256");
+        } else {
+            throw new AssertionError("Unexpected value: " + v);
         }
     }
 
@@ -129,7 +114,11 @@ class OpenSSLLegacyDhTest extends TestBase {
     }
 
     private static void assertNamedGroupSkipped(
-            DetectionStore<SquidCheck<?>, AstNode, Symbol, SquidAstVisitorContext<? extends Grammar>>
+            DetectionStore<
+                            SquidCheck<?>,
+                            AstNode,
+                            Symbol,
+                            SquidAstVisitorContext<? extends Grammar>>
                     detectionStore,
             IValue<AstNode> value,
             List<INode> nodes,

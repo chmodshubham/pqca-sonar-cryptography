@@ -62,7 +62,7 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 37 rule entries in {@link OpenSSLEvpMac}.
+ * Covers all 42 rule entries in {@link OpenSSLEvpMac}.
  *
  * <p>Follows the deep-assert pattern documented in {@link
  * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
@@ -74,7 +74,7 @@ class OpenSSLEvpMacTest extends TestBase {
     @Test
     void test() {
         CxxVerifier.verify("rules/detection/openssl/mac/OpenSSLEvpMacTestFile.cc", this);
-        assertThat(observed).hasSize(37);
+        assertThat(observed).hasSize(40);
     }
 
     @Override
@@ -108,12 +108,10 @@ class OpenSSLEvpMacTest extends TestBase {
             case "HMAC-SHA3-256" -> assertHmacSha3(nodes, 256);
             case "HMAC-SHA3-384" -> assertHmacSha3(nodes, 384);
             case "HMAC-SHA3-512" -> assertHmacSha3(nodes, 512);
-            case "HMAC-RIPEMD160" -> assertHmac(nodes, RIPEMD.class, "RIPEMD-160", "HMAC-RIPEMD",
-                    160);
-            case "HMAC-BLAKE2B" -> assertHmac(nodes, BLAKE2b.class, "BLAKE2b", "HMAC-BLAKE2b",
-                    512);
-            case "HMAC-BLAKE2S" -> assertHmac(nodes, BLAKE2s.class, "BLAKE2s", "HMAC-BLAKE2s",
-                    256);
+            case "HMAC-RIPEMD160" ->
+                    assertHmac(nodes, RIPEMD.class, "RIPEMD-160", "HMAC-RIPEMD", 160);
+            case "HMAC-BLAKE2B" -> assertHmac(nodes, BLAKE2b.class, "BLAKE2b", "HMAC-BLAKE2b", 512);
+            case "HMAC-BLAKE2S" -> assertHmac(nodes, BLAKE2s.class, "BLAKE2s", "HMAC-BLAKE2s", 256);
             case "HMAC-SM3" -> assertHmac(nodes, SM3.class, "SM3", "HMAC-SM3", 256);
             case "CMAC-AES-128" -> assertCmacAes(nodes, 128);
             case "CMAC-AES-192" -> assertCmacAes(nodes, 192);
@@ -147,6 +145,8 @@ class OpenSSLEvpMacTest extends TestBase {
                 assertThat(n).isInstanceOf(BLAKE2s.class);
                 assertThat(n.asString()).isEqualTo("BLAKE2s");
             }
+            case "MAC" -> assertThat(nodes).isEmpty();
+            case "HMAC", "CMAC" -> assertThat(nodes).isNotNull();
             default -> throw new AssertionError("Unexpected value: " + v);
         }
     }
@@ -181,8 +181,7 @@ class OpenSSLEvpMacTest extends TestBase {
     }
 
     private static void assertHmacSha3(List<INode> nodes, int digestSize) {
-        assertHmac(nodes, SHA3.class, "SHA3-" + digestSize, "HMAC-SHA3-" + digestSize,
-                digestSize);
+        assertHmac(nodes, SHA3.class, "SHA3-" + digestSize, "HMAC-SHA3-" + digestSize, digestSize);
     }
 
     private static void assertCmacAes(List<INode> nodes, int keyLength) {

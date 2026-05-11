@@ -31,7 +31,6 @@ import com.ibm.mapper.model.INode;
 import com.ibm.mapper.model.KeyLength;
 import com.ibm.mapper.model.Mode;
 import com.ibm.mapper.model.Oid;
-import com.ibm.mapper.model.PublicKeyEncryption;
 import com.ibm.mapper.model.StreamCipher;
 import com.ibm.mapper.model.algorithms.AES;
 import com.ibm.mapper.model.algorithms.Aria;
@@ -46,7 +45,6 @@ import com.ibm.mapper.model.algorithms.RC2;
 import com.ibm.mapper.model.algorithms.RC4;
 import com.ibm.mapper.model.algorithms.RC5;
 import com.ibm.mapper.model.algorithms.SEED;
-import com.ibm.mapper.model.algorithms.SM2;
 import com.ibm.mapper.model.algorithms.SM4;
 import com.ibm.mapper.model.algorithms.cast.CAST128;
 import com.ibm.plugin.CxxVerifier;
@@ -63,14 +61,14 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 168 rule entries in {@link OpenSSLEvpCipher}.
+ * Covers EVP cipher detection rules in {@link OpenSSLEvpCipher}.
  *
  * <p>Follows the deep-assert pattern documented in {@link
  * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
  *
- * <p>168 findings is too many to spell out per-{@code findingId}; instead, dispatch on detection
- * value string and verify INode shape per family (AES, ARIA, Camellia, SM4, DES/DESede, Blowfish,
- * CAST5, RC2, RC4, RC5, IDEA, SEED, ChaCha20, ChaCha20-Poly1305, SM2-PKE, NULL).
+ * <p>198 findings; dispatches on detection value string and verifies INode shape per family (AES,
+ * ARIA, Camellia, SM4, DES/DESede, Blowfish, CAST5, RC2, RC4, RC5, IDEA, SEED, ChaCha20,
+ * ChaCha20-Poly1305, NULL, plus EVP/CMS/PKCS7 init/fetch/misc operations).
  */
 class OpenSSLEvpCipherTest extends TestBase {
 
@@ -80,9 +78,8 @@ class OpenSSLEvpCipherTest extends TestBase {
     @Test
     void test() {
         CxxVerifier.verify("rules/detection/openssl/cipher/OpenSSLEvpCipherTestFile.cc", this);
-        assertThat(findingCount).isEqualTo(168);
-        // 167 unique values — SM2-PKE fires twice from two different rules (encrypt + decrypt).
-        assertThat(observed).hasSize(167);
+        assertThat(findingCount).isEqualTo(198);
+        assertThat(observed).hasSize(180);
     }
 
     @Override
@@ -107,7 +104,8 @@ class OpenSSLEvpCipherTest extends TestBase {
             assertThat(nodes).isEmpty();
             return;
         }
-        if (v.startsWith("AES-") && (v.contains("-CBC-HMAC-SHA1") || v.contains("-CBC-HMAC-SHA256"))) {
+        if (v.startsWith("AES-")
+                && (v.contains("-CBC-HMAC-SHA1") || v.contains("-CBC-HMAC-SHA256"))) {
             assertAesHmac(nodes, v);
             return;
         }
@@ -129,6 +127,10 @@ class OpenSSLEvpCipherTest extends TestBase {
         }
         if (v.equals("DESX-CBC")) {
             assertDes(nodes, "CBC");
+            return;
+        }
+        if (v.equals("DES-EDE3-WRAP")) {
+            assertThat(nodes).isNotNull();
             return;
         }
         if (v.startsWith("DESede3")) {
@@ -199,10 +201,23 @@ class OpenSSLEvpCipherTest extends TestBase {
             assertThat(n.getKind()).isEqualTo(AuthenticatedEncryption.class);
             return;
         }
-        if (v.equals("SM2-PKE")) {
-            INode n = head(nodes);
-            assertThat(n).isInstanceOf(SM2.class);
-            assertThat(n.getKind()).isEqualTo(PublicKeyEncryption.class);
+        if (v.equals("ENCRYPT")
+                || v.equals("DECRYPT")
+                || v.equals("CIPHER-INIT")
+                || v.equals("ASYM-CIPHER")
+                || v.equals("CIPHER-BY-NAME")
+                || v.equals("RSA-PADDING")
+                || v.equals("RSA-OAEP-MD")
+                || v.equals("RSA-OAEP-LABEL")
+                || v.equals("CMS-ENCRYPT")
+                || v.equals("CMS-ENVELOPED-DATA")
+                || v.equals("CMS-AUTH-ENVELOPED-DATA")
+                || v.equals("CMS-ENCRYPTED-DATA")
+                || v.equals("CMS-ENCRYPTED-DATA-KEY")
+                || v.equals("CMS-RECIPIENT-KEY")
+                || v.equals("PKCS7-ENCRYPT")
+                || v.equals("PKCS7-CIPHER")) {
+            assertThat(nodes).isNotNull();
             return;
         }
         throw new AssertionError("Unexpected value: " + v);

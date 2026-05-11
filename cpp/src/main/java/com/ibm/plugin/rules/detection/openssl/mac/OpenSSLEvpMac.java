@@ -549,6 +549,50 @@ public final class OpenSSLEvpMac {
                     .inBundle(() -> BUNDLE)
                     .withoutDependingDetectionRules();
 
+    private static final IDetectionRule<AstNode> HMAC_FUNC =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("HMAC")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("HMAC"))
+                    .withAnyParameters()
+                    .buildForContext(new MacContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> HMAC_INIT_EX =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("HMAC_Init_ex")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("HMAC"))
+                    .withAnyParameters()
+                    .buildForContext(new MacContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> CMAC_INIT =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("CMAC_Init")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("CMAC"))
+                    .withAnyParameters()
+                    .buildForContext(new MacContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> EVP_Q_MAC =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("EVP_Q_mac")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("MAC"))
+                    .withAnyParameters()
+                    .buildForContext(new MacContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
     private OpenSSLEvpMac() {
         // nothing
     }
@@ -599,6 +643,11 @@ public final class OpenSSLEvpMac {
                 EVP_MAC_KMAC256,
                 // BLAKE2 MAC
                 EVP_MAC_BLAKE2BMAC,
-                EVP_MAC_BLAKE2SMAC);
+                EVP_MAC_BLAKE2SMAC,
+                // Legacy HMAC/CMAC
+                HMAC_FUNC,
+                HMAC_INIT_EX,
+                CMAC_INIT,
+                EVP_Q_MAC);
     }
 }

@@ -43,7 +43,7 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 19 rule entries in {@link OpenSSLLegacyRsa}.
+ * Covers all 31 rule entries in {@link OpenSSLLegacyRsa}.
  *
  * <p>Follows the deep-assert pattern documented in {@link
  * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
@@ -71,56 +71,34 @@ class OpenSSLLegacyRsaTest extends TestBase {
         assertThat(detectionStore.getDetectionValues()).hasSize(1);
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
 
-        switch (findingId) {
-            case 0, 1, 2 -> {
+        String v = value.asString();
+        switch (v) {
+            case "RSA" -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("RSA");
                 assertRsaPke(nodes);
             }
-            case 3 -> {
+            case "RSA-ENCRYPT",
+                    "RSA-DECRYPT",
+                    "RSA-OAEP",
+                    "RSA-PKCS1",
+                    "RSA-X931",
+                    "RSA-NO-PAD",
+                    "RSA-NO-PADDING",
+                    "RSA-PKCS1-TYPE2" -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(CipherContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-ENCRYPT");
                 assertThat(nodes).isEmpty();
             }
-            case 4 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(CipherContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-DECRYPT");
-                assertThat(nodes).isEmpty();
-            }
-            case 5, 7, 9 -> {
+            case "RSA-SIGN", "RSA-VERIFY", "RSA-PSS" -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-SIGN");
                 assertRsaSig(nodes);
             }
-            case 6, 8, 10 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-VERIFY");
-                assertRsaSig(nodes);
+            case "RSA-OAEP-MGF1" -> {
+                assertThat(nodes).isNotNull();
             }
-            case 11, 12 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("RSA");
-                assertRsaPke(nodes);
-            }
-            case 13, 14, 15, 16 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-PSS");
-                assertRsaSig(nodes);
-            }
-            case 17, 18 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(CipherContext.class);
-                assertThat(value.asString()).isEqualTo("RSA-OAEP");
-                assertThat(nodes).isEmpty();
-            }
-            default -> throw new AssertionError("Unexpected findingId: " + findingId);
+            default -> throw new AssertionError("Unexpected value: " + v);
         }
     }
 

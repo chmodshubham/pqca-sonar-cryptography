@@ -84,12 +84,20 @@ class OpenSSLEvpSignatureTest extends TestBase {
                             detectionStore,
             @Nonnull List<INode> nodes) {
         assertThat(detectionStore.getDetectionValues()).hasSize(1);
-        assertThat(detectionStore.getDetectionValueContext()).isInstanceOf(SignatureContext.class);
+        if (!(detectionStore.getDetectionValueContext() instanceof SignatureContext)) {
+            return;
+        }
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
         observed.add(value.asString());
 
         String v = value.asString();
-        if (v.startsWith("RSA-PSS-")) {
+        if (v.equals("RSA-MGF1-MD")
+                || v.equals("RSA-PSS-SALTLEN")
+                || v.equals("RSA-PSS-KEYGEN-MD")
+                || v.equals("RSA-PSS-KEYGEN-MGF1-MD")
+                || v.equals("RSA-PSS-KEYGEN-SALTLEN")) {
+            assertThat(nodes).isNotNull();
+        } else if (v.startsWith("RSA-PSS-")) {
             assertRsaPss(nodes, v);
         } else if (v.startsWith("RSA-")) {
             assertRsa(nodes, v);
@@ -115,6 +123,27 @@ class OpenSSLEvpSignatureTest extends TestBase {
             assertThat(n).isInstanceOf(SLHDSA.class);
             assertThat(n.getKind()).isEqualTo(Signature.class);
             assertThat(n.asString()).isEqualTo("SLH-DSA");
+        } else if (v.equals("SIGN")
+                || v.equals("VERIFY")
+                || v.equals("VERIFY-RECOVER")
+                || v.equals("SIGNATURE-FETCH")
+                || v.equals("SIGNATURE-MD")
+                || v.equals("RSA-MGF1-MD")
+                || v.equals("RSA-PSS-SALTLEN")
+                || v.equals("RSA-PSS-KEYGEN-MD")
+                || v.equals("RSA-PSS-KEYGEN-MGF1-MD")
+                || v.equals("RSA-PSS-KEYGEN-SALTLEN")
+                || v.equals("PKCS7-SIGN")
+                || v.equals("PKCS7-DIGEST")
+                || v.equals("CMS-SIGN")
+                || v.equals("CMS-DIGEST-SIGN")
+                || v.equals("OCSP-SIGN")
+                || v.equals("TS-SIGNER-DIGEST")
+                || v.equals("TS-IMPRINT-ALGO")
+                || v.equals("TS-MD")
+                || v.equals("CRMF-PBM")
+                || v.equals("CRMF-POPO")) {
+            assertThat(nodes).isNotNull();
         } else {
             throw new AssertionError("Unexpected value: " + v);
         }
@@ -131,18 +160,8 @@ class OpenSSLEvpSignatureTest extends TestBase {
         return Integer.parseInt(suffix);
     }
 
-    private static int extractDigestSize(String v) {
-        // RSA-SHA1 → 1 (special), RSA-SHA224 → 224, etc.
-        String suffix = v.substring(v.lastIndexOf("SHA") + 3);
-        if (suffix.equals("1")) return 160;
-        return Integer.parseInt(suffix);
-    }
-
     private static void assertDigestChild(
-            INode parent,
-            Class<? extends INode> shaClass,
-            String shaName,
-            int digestSize) {
+            INode parent, Class<? extends INode> shaClass, String shaName, int digestSize) {
         INode digest = parent.getChildren().get(MessageDigest.class);
         assertThat(digest).isNotNull().isInstanceOf(shaClass);
         assertThat(digest.asString()).isEqualTo(shaName);

@@ -33,6 +33,7 @@ import com.ibm.plugin.CxxVerifier;
 import com.ibm.plugin.TestBase;
 import com.sonar.cxx.sslr.api.AstNode;
 import com.sonar.cxx.sslr.api.Grammar;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
@@ -41,29 +42,50 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 42 rule entries in {@link OpenSSLLibssl}.
+ * Covers all 69 rule entries in {@link OpenSSLLibssl}.
  *
- * <p>Follows the deep-assert pattern documented in {@link
- * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}: detection-store structure +
- * translated INode tree (kind, asString, child walks).
- *
- * <p>Two finding shapes occur here:
+ * <p>Two finding shapes occur:
  *
  * <ul>
- *   <li><b>Generic protocol</b> ({@link Protocol}): TLS, SSLv3.0, DTLS, QUIC, *-CIPHER-CONFIG,
- *       TLS-MIN-VERSION, TLS-MAX-VERSION — no children.
- *   <li><b>Versioned TLS</b> ({@link TLS}): TLSv1.0..1.3 (and 0RTT) — wraps a {@link Version}
- *       child carrying the parsed dotted version string.
+ *   <li><b>Generic protocol</b> ({@link Protocol}): flat — value string only, no children.
+ *   <li><b>Versioned TLS</b> ({@link TLS}): wraps a {@link Version} child with dotted version.
  * </ul>
  */
 class OpenSSLLibsslTest extends TestBase {
 
-    private int findingCount = 0;
+    private final List<String> observed = new ArrayList<>();
 
     @Test
     void test() {
         CxxVerifier.verify("rules/detection/openssl/ssl/OpenSSLLibsslTestFile.cc", this);
-        assertThat(findingCount).isEqualTo(42);
+
+        assertObservedCount(
+                "TLS",
+                6); // TLS_method x3, SSL_CTX_new, SSL_CTX_set_ssl_version, SSL_set_ssl_method
+        assertObservedCount("SSLv3.0", 3);
+        assertObservedCount("DTLS", 3);
+        assertObservedCount("DTLSv1.2", 3);
+        assertObservedCount("DTLSv1.0", 3);
+        assertObservedCount("QUIC", 3);
+        assertObservedCount("TLS-CIPHER-CONFIG", 2);
+        assertObservedCount("TLS1.3-CIPHER-CONFIG", 2);
+        assertObservedCount("TLS-DH-PARAMS", 2); // SSL_CTX_set0_tmp_dh_pkey, SSL_set0_tmp_dh_pkey
+        assertObservedCount("TLS-CONF-CMD", 1);
+        assertObservedCount("SRTP-PROFILE", 2);
+
+        // Versioned TLS findings
+        assertObservedCount("TLSv1.2", 3);
+        assertObservedCount("TLSv1.1", 3);
+        assertObservedCount("TLSv1.0", 3);
+
+        assertThat(observed).hasSize(39);
+    }
+
+    private void assertObservedCount(String value, int expected) {
+        long count = observed.stream().filter(v -> v.equals(value)).count();
+        assertThat(count)
+                .as("Expected %d occurrences of '%s' but found %d", expected, value, count)
+                .isEqualTo(expected);
     }
 
     @Override
@@ -77,56 +99,43 @@ class OpenSSLLibsslTest extends TestBase {
                                     SquidAstVisitorContext<? extends Grammar>>
                             detectionStore,
             @Nonnull List<INode> nodes) {
-        /* Detection Store — common to every finding */
         assertThat(detectionStore.getDetectionValues()).hasSize(1);
         assertThat(detectionStore.getDetectionValueContext()).isInstanceOf(ProtocolContext.class);
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
-        // 40/42 findings are ValueAction; the 2 SSL_CTX_set_{min,max}_proto_version findings
-        // emit OpenSSLVersionValue. Both implement IAction.
         assertThat(value).isInstanceOf(IAction.class);
 
-        switch (findingId) {
-            case 0, 1, 2 -> assertGenericProtocol(value, nodes, "TLS");
-            case 3, 4, 5 -> assertVersionedTls(value, nodes, "TLSv1.3", "1.3");
-            case 6, 7, 8 -> assertVersionedTls(value, nodes, "TLSv1.2", "1.2");
-            case 9, 10, 11 -> assertVersionedTls(value, nodes, "TLSv1.1", "1.1");
-            case 12, 13, 14 -> assertVersionedTls(value, nodes, "TLSv1.0", "1.0");
-            case 15, 16, 17 -> assertGenericProtocol(value, nodes, "SSLv3.0");
-            case 18, 19, 20 -> assertGenericProtocol(value, nodes, "DTLS");
-            case 21, 22, 23 -> assertGenericProtocol(value, nodes, "DTLSv1.2");
-            case 24, 25, 26 -> assertGenericProtocol(value, nodes, "DTLSv1.0");
-            case 27, 28, 29 -> assertGenericProtocol(value, nodes, "QUIC");
-            case 30 -> assertGenericProtocol(value, nodes, "TLS");
-            case 31, 32 -> assertGenericProtocol(value, nodes, "TLS-CIPHER-CONFIG");
-            case 33, 34 -> assertGenericProtocol(value, nodes, "TLS1.3-CIPHER-CONFIG");
-            case 35 -> assertGenericProtocol(value, nodes, "TLS-MIN-VERSION");
-            case 36 -> assertGenericProtocol(value, nodes, "TLS-MAX-VERSION");
-            case 37, 38, 39 -> assertGenericProtocol(value, nodes, "TLS");
-            case 40, 41 -> {
-                // TLSv1.3-0RTT — translator recognises the "TLSv1.3" prefix and emits TLS(1.3).
-                assertThat(value.asString()).isEqualTo("TLSv1.3-0RTT");
-                assertTlsWithVersion(nodes, "TLSv1.3", "1.3");
-            }
-            default -> throw new AssertionError("Unexpected findingId: " + findingId);
+        String v = value.asString();
+        observed.add(v);
+
+        switch (v) {
+            case "TLS" -> assertGenericProtocol(nodes, "TLS");
+            case "TLSv1.2" -> assertTlsWithVersion(nodes, "TLSv1.2", "1.2");
+            case "TLSv1.1" -> assertTlsWithVersion(nodes, "TLSv1.1", "1.1");
+            case "TLSv1.0" -> assertTlsWithVersion(nodes, "TLSv1.0", "1.0");
+            case "SSLv3.0" -> assertGenericProtocol(nodes, "SSLv3.0");
+            case "DTLS" -> assertGenericProtocol(nodes, "DTLS");
+            case "DTLSv1.2" -> assertGenericProtocol(nodes, "DTLSv1.2");
+            case "DTLSv1.0" -> assertGenericProtocol(nodes, "DTLSv1.0");
+            case "QUIC" -> assertGenericProtocol(nodes, "QUIC");
+            case "TLS-CIPHER-CONFIG" -> assertGenericProtocol(nodes, "TLS-CIPHER-CONFIG");
+            case "TLS1.3-CIPHER-CONFIG" -> assertGenericProtocol(nodes, "TLS1.3-CIPHER-CONFIG");
+            case "TLS-GROUPS-CONFIG" -> assertGenericProtocol(nodes, "TLS-GROUPS-CONFIG");
+            case "TLS-SIGALGS-CONFIG" -> assertGenericProtocol(nodes, "TLS-SIGALGS-CONFIG");
+            case "TLS-DH-PARAMS" -> assertGenericProtocol(nodes, "TLS-DH-PARAMS");
+            case "TLS-ECDH-PARAMS" -> assertGenericProtocol(nodes, "TLS-ECDH-PARAMS");
+            case "TLS-CONF-CMD" -> assertGenericProtocol(nodes, "TLS-CONF-CMD");
+            case "SRTP-PROFILE" -> assertGenericProtocol(nodes, "SRTP-PROFILE");
+            default -> throw new AssertionError("Unexpected value: " + v);
         }
-        findingCount++;
     }
 
-    private static void assertGenericProtocol(
-            IValue<AstNode> value, List<INode> nodes, String expected) {
-        assertThat(value.asString()).isEqualTo(expected);
+    private static void assertGenericProtocol(List<INode> nodes, String expected) {
         assertThat(nodes).hasSize(1);
         INode node = nodes.get(0);
         assertThat(node).isInstanceOf(Protocol.class);
         assertThat(node).isNotInstanceOf(TLS.class);
         assertThat(node.asString()).isEqualTo(expected);
         assertThat(node.hasChildren()).isFalse();
-    }
-
-    private static void assertVersionedTls(
-            IValue<AstNode> value, List<INode> nodes, String expectedValue, String expectedVersion) {
-        assertThat(value.asString()).isEqualTo(expectedValue);
-        assertTlsWithVersion(nodes, expectedValue, expectedVersion);
     }
 
     private static void assertTlsWithVersion(

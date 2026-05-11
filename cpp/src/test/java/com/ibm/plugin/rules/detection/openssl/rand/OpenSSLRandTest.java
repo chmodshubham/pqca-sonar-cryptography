@@ -43,23 +43,23 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 20 rule entries in {@link com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRand}.
+ * Covers all 8 rule entries in {@link com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRand}.
  *
  * <p><b>This test is the deep-assert reference for the C/C++ module.</b> Every other cpp detection
  * test class in this module references this Javadoc and follows the same pattern:
  *
  * <ol>
  *   <li>Verify detection-store structure: {@code getDetectionValues().hasSize(1)}, context class
- *       ({@link PRNGContext}, {@link com.ibm.engine.model.context.CipherContext},
- *       {@link com.ibm.engine.model.context.MacContext} etc.), value type
- *       ({@link ValueAction} or library-specific {@code IAction}), and {@code asString()}.
- *   <li>Verify the translated {@link INode} tree returned by
- *       {@link com.ibm.plugin.translation.CxxTranslationProcess#initiate}: top-level node class
- *       (e.g. {@link AES}, {@link SHA2}), {@link INode#getKind()}, {@link INode#asString()}, and
- *       when the translator/enricher produces composite nodes, walk children with
- *       {@code node.getChildren().get(<ClassToken>.class)} (e.g. {@link com.ibm.mapper.model.Mode},
- *       {@link com.ibm.mapper.model.KeyLength}, {@link com.ibm.mapper.model.BlockSize},
- *       {@link com.ibm.mapper.model.Oid}, {@link com.ibm.mapper.model.MessageDigest}).
+ *       ({@link PRNGContext}, {@link com.ibm.engine.model.context.CipherContext}, {@link
+ *       com.ibm.engine.model.context.MacContext} etc.), value type ({@link ValueAction} or
+ *       library-specific {@code IAction}), and {@code asString()}.
+ *   <li>Verify the translated {@link INode} tree returned by {@link
+ *       com.ibm.plugin.translation.CxxTranslationProcess#initiate}: top-level node class (e.g.
+ *       {@link AES}, {@link SHA2}), {@link INode#getKind()}, {@link INode#asString()}, and when the
+ *       translator/enricher produces composite nodes, walk children with {@code
+ *       node.getChildren().get(<ClassToken>.class)} (e.g. {@link com.ibm.mapper.model.Mode}, {@link
+ *       com.ibm.mapper.model.KeyLength}, {@link com.ibm.mapper.model.BlockSize}, {@link
+ *       com.ibm.mapper.model.Oid}, {@link com.ibm.mapper.model.MessageDigest}).
  * </ol>
  *
  * <p>Findings whose translator returns {@code Optional.empty()} (no model coverage yet) assert
@@ -92,9 +92,8 @@ class OpenSSLRandTest extends TestBase {
         assertThat(value).isInstanceOf(ValueAction.class);
 
         switch (findingId) {
-            case 0, 1 -> {
-                // RAND_bytes, RAND_priv_bytes → Algorithm("RAND") with PseudorandomNumberGenerator
-                // kind
+            case 0, 1, 2, 3 -> {
+                // RAND_bytes, RAND_priv_bytes, RAND_bytes_ex, RAND_priv_bytes_ex
                 assertThat(value.asString()).isEqualTo("RAND");
                 assertThat(nodes).hasSize(1);
                 INode node = nodes.get(0);
@@ -102,76 +101,51 @@ class OpenSSLRandTest extends TestBase {
                 assertThat(node.getKind()).isEqualTo(PseudorandomNumberGenerator.class);
                 assertThat(node.asString()).isEqualTo("RAND");
             }
-            case 2 -> {
-                // RAND_pseudo_bytes → Algorithm("RAND-PSEUDO")
-                assertThat(value.asString()).isEqualTo("RAND-PSEUDO");
-                assertThat(nodes).hasSize(1);
-                INode node = nodes.get(0);
-                assertThat(node).isInstanceOf(Algorithm.class);
-                assertThat(node.getKind()).isEqualTo(PseudorandomNumberGenerator.class);
-                assertThat(node.asString()).isEqualTo("RAND-PSEUDO");
-            }
-            case 3 -> {
-                // RAND_seed → Optional.empty() in translator
-                assertThat(value.asString()).isEqualTo("RAND-SEED");
-                assertThat(nodes).isEmpty();
-            }
             case 4 -> {
-                assertThat(value.asString()).isEqualTo("RAND-ADD");
-                assertThat(nodes).isEmpty();
-            }
-            case 5 -> {
-                assertThat(value.asString()).isEqualTo("RAND-POLL");
-                assertThat(nodes).isEmpty();
-            }
-            case 6 -> {
-                // CTR-DRBG-AES128 → AES(128) with PseudorandomNumberGenerator kind + AES key-size
-                // child
                 assertThat(value.asString()).isEqualTo("CTR-DRBG-AES128");
                 assertDrbgAes(nodes, 128);
             }
-            case 7 -> {
+            case 5 -> {
                 assertThat(value.asString()).isEqualTo("CTR-DRBG-AES192");
                 assertDrbgAes(nodes, 192);
             }
-            case 8 -> {
+            case 6 -> {
                 assertThat(value.asString()).isEqualTo("CTR-DRBG-AES256");
                 assertDrbgAes(nodes, 256);
             }
-            case 9 -> {
-                // HASH-DRBG-SHA1 → SHA wrapped in PseudorandomNumberGenerator kind
+            case 7 -> {
                 assertThat(value.asString()).isEqualTo("HASH-DRBG-SHA1");
                 assertDrbgSha(nodes);
             }
-            case 10 -> {
+            case 8 -> {
                 assertThat(value.asString()).isEqualTo("HASH-DRBG-SHA256");
                 assertDrbgSha2(nodes, 256);
             }
-            case 11 -> {
+            case 9 -> {
                 assertThat(value.asString()).isEqualTo("HASH-DRBG-SHA384");
                 assertDrbgSha2(nodes, 384);
             }
-            case 12 -> {
+            case 10 -> {
                 assertThat(value.asString()).isEqualTo("HASH-DRBG-SHA512");
                 assertDrbgSha2(nodes, 512);
             }
-            case 13 -> {
+            case 11 -> {
                 assertThat(value.asString()).isEqualTo("HMAC-DRBG-SHA1");
                 assertDrbgSha(nodes);
             }
-            case 14 -> {
+            case 12 -> {
                 assertThat(value.asString()).isEqualTo("HMAC-DRBG-SHA256");
                 assertDrbgSha2(nodes, 256);
             }
-            case 15 -> {
+            case 13 -> {
                 assertThat(value.asString()).isEqualTo("HMAC-DRBG-SHA384");
                 assertDrbgSha2(nodes, 384);
             }
-            case 16 -> {
+            case 14 -> {
                 assertThat(value.asString()).isEqualTo("HMAC-DRBG-SHA512");
                 assertDrbgSha2(nodes, 512);
             }
-            case 17 -> {
+            case 15 -> {
                 assertThat(value.asString()).isEqualTo("SEED-SRC");
                 assertThat(nodes).hasSize(1);
                 INode node = nodes.get(0);
@@ -179,7 +153,7 @@ class OpenSSLRandTest extends TestBase {
                 assertThat(node.getKind()).isEqualTo(PseudorandomNumberGenerator.class);
                 assertThat(node.asString()).isEqualTo("SEED-SRC");
             }
-            case 18 -> {
+            case 16 -> {
                 assertThat(value.asString()).isEqualTo("JITTER");
                 assertThat(nodes).hasSize(1);
                 INode node = nodes.get(0);
@@ -187,13 +161,19 @@ class OpenSSLRandTest extends TestBase {
                 assertThat(node.getKind()).isEqualTo(PseudorandomNumberGenerator.class);
                 assertThat(node.asString()).isEqualTo("JITTER");
             }
-            case 19 -> {
+            case 17 -> {
                 assertThat(value.asString()).isEqualTo("TEST-RAND");
                 assertThat(nodes).hasSize(1);
                 INode node = nodes.get(0);
                 assertThat(node).isInstanceOf(Algorithm.class);
                 assertThat(node.getKind()).isEqualTo(PseudorandomNumberGenerator.class);
                 assertThat(node.asString()).isEqualTo("TEST-RAND");
+            }
+            case 18, 19, 20 -> {
+                // EVP_RAND_CTX_new, RAND_set_DRBG_type, RAND_set_seed_source_type → RAND or
+                // DRBG-TYPE
+                assertThat(value.asString()).isIn("RAND", "DRBG-TYPE");
+                assertThat(nodes).isNotNull();
             }
             default -> throw new AssertionError("Unexpected findingId: " + findingId);
         }

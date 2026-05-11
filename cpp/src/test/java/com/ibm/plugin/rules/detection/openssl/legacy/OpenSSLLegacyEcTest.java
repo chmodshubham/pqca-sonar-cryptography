@@ -23,8 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ibm.engine.detection.DetectionStore;
 import com.ibm.engine.model.IValue;
-import com.ibm.engine.model.context.KeyAgreementContext;
-import com.ibm.engine.model.context.KeyContext;
 import com.ibm.engine.model.context.SignatureContext;
 import com.ibm.mapper.model.INode;
 import com.ibm.mapper.model.KeyAgreement;
@@ -44,7 +42,7 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 20 rule entries in {@link OpenSSLLegacyEc}.
+ * Covers all 24 rule entries in {@link OpenSSLLegacyEc}.
  *
  * <p>Follows the deep-assert pattern documented in {@link
  * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
@@ -70,62 +68,22 @@ class OpenSSLLegacyEcTest extends TestBase {
         assertThat(detectionStore.getDetectionValues()).hasSize(1);
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
 
-        switch (findingId) {
-            case 0, 1, 2, 3, 4, 5 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("EC");
-                assertEcdsa(nodes);
-            }
-            case 6, 8, 10, 11, 12 -> {
+        String v = value.asString();
+        switch (v) {
+            case "EC" -> assertEcdsa(nodes);
+            case "ECDSA-SIGN" -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("ECDSA-SIGN");
                 assertEcdsa(nodes);
             }
-            case 7, 9 -> {
+            case "ECDSA-VERIFY" -> {
                 assertThat(detectionStore.getDetectionValueContext())
                         .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("ECDSA-VERIFY");
                 assertEcdsa(nodes);
             }
-            case 13 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(SignatureContext.class);
-                assertThat(value.asString()).isEqualTo("ECDSA");
-                assertThat(nodes).isEmpty();
-            }
-            case 14 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyAgreementContext.class);
-                assertThat(value.asString()).isEqualTo("ECDH");
-                assertEcdh(nodes);
-            }
-            case 15 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("EC");
-                assertEcdsa(nodes);
-            }
-            case 16 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("EC-GFP");
-                assertThat(nodes).isEmpty();
-            }
-            case 17 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("EC-GF2M");
-                assertThat(nodes).isEmpty();
-            }
-            case 18, 19 -> {
-                assertThat(detectionStore.getDetectionValueContext())
-                        .isInstanceOf(KeyContext.class);
-                assertThat(value.asString()).isEqualTo("EC");
-                assertEcdsa(nodes);
-            }
-            default -> throw new AssertionError("Unexpected findingId: " + findingId);
+            case "ECDH" -> assertEcdh(nodes);
+            case "EC-GFP", "EC-GF2M" -> assertThat(nodes).isEmpty();
+            default -> throw new AssertionError("Unexpected value: " + v);
         }
     }
 

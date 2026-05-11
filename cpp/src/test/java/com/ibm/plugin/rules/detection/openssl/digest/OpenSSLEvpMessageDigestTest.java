@@ -55,7 +55,7 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 24 rule entries in {@link OpenSSLEvpMessageDigest}.
+ * Covers all 29 rule entries in {@link OpenSSLEvpMessageDigest}.
  *
  * <p>Follows the deep-assert pattern documented in {@link
  * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
@@ -206,6 +206,18 @@ class OpenSSLEvpMessageDigestTest extends TestBase {
             case 23 -> {
                 assertThat(value.asString()).isEqualTo("NULL");
                 assertThat(nodes).isEmpty();
+            }
+            case 24 -> {
+                assertThat(value.asString()).isEqualTo("MD-FETCH");
+                assertThat(nodes).isEmpty();
+            }
+            case 25 -> {
+                assertThat(value.asString()).isEqualTo("DIGEST-BY-NAME");
+                assertThat(nodes).isEmpty();
+            }
+            case 26, 27, 28 -> {
+                assertThat(value.asString()).isEqualTo("DIGEST");
+                assertThat(nodes).isNotNull();
             }
             default -> throw new AssertionError("Unexpected findingId: " + findingId);
         }

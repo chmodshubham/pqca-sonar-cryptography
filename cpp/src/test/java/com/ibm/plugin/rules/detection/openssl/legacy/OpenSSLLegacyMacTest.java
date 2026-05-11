@@ -70,19 +70,9 @@ class OpenSSLLegacyMacTest extends TestBase {
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
         assertThat(value).isInstanceOf(ValueAction.class);
 
-        switch (findingId) {
-            case 0, 1, 2, 3, 4, 5, 6, 7 -> {
-                // HMAC_CTX_new, HMAC_CTX_reset, HMAC_CTX_copy, HMAC_Init_ex, HMAC_Init,
-                // HMAC_Update, HMAC_Final, HMAC
-                assertThat(value.asString()).isEqualTo("HMAC");
-                assertThat(nodes).isEmpty();
-            }
-            case 8, 9, 10, 11, 12 -> {
-                // CMAC_CTX_new, CMAC_Init, CMAC_Update, CMAC_Final, CMAC_resume
-                assertThat(value.asString()).isEqualTo("CMAC");
-                assertThat(nodes).isEmpty();
-            }
-            default -> throw new AssertionError("Unexpected findingId: " + findingId);
+        switch (value.asString()) {
+            case "HMAC", "CMAC" -> assertThat(nodes).isEmpty();
+            default -> throw new AssertionError("Unexpected value: " + value.asString());
         }
     }
 }

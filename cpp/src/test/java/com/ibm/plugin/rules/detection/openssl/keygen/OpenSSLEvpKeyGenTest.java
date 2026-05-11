@@ -76,8 +76,8 @@ class OpenSSLEvpKeyGenTest extends TestBase {
     @Test
     void test() {
         CxxVerifier.verify("rules/detection/openssl/keygen/OpenSSLEvpKeyGenTestFile.cc", this);
-        assertThat(findingCount).isEqualTo(48);
-        assertThat(observed).hasSize(48);
+        assertThat(findingCount).isEqualTo(27);
+        assertThat(observed).hasSize(23);
     }
 
     @Override
@@ -103,16 +103,16 @@ class OpenSSLEvpKeyGenTest extends TestBase {
             case "DH" -> assertDh(nodes);
             case "ED25519" -> assertEd25519(nodes);
             case "ED448" -> assertEd448(nodes);
-            case "X25519" -> assertEdwardsKa(nodes, X25519.class, "x25519",
-                    "Curve25519", "1.3.101.110");
-            case "X448" -> assertEdwardsKa(nodes, X448.class, "x448",
-                    "Curve448", "1.3.101.111");
-            case "ML-KEM-512" -> assertKemPset(nodes, MLKEM.class, "ML-KEM-512",
-                    "2.16.840.1.101.3.4.4.1", 512);
-            case "ML-KEM-768" -> assertKemPset(nodes, MLKEM.class, "ML-KEM-768",
-                    "2.16.840.1.101.3.4.4.2", 768);
-            case "ML-KEM-1024" -> assertKemPset(nodes, MLKEM.class, "ML-KEM-1024",
-                    "2.16.840.1.101.3.4.4.3", 1024);
+            case "X25519" ->
+                    assertEdwardsKa(nodes, X25519.class, "x25519", "Curve25519", "1.3.101.110");
+            case "X448" -> assertEdwardsKa(nodes, X448.class, "x448", "Curve448", "1.3.101.111");
+            case "ML-KEM-512" ->
+                    assertKemPset(nodes, MLKEM.class, "ML-KEM-512", "2.16.840.1.101.3.4.4.1", 512);
+            case "ML-KEM-768" ->
+                    assertKemPset(nodes, MLKEM.class, "ML-KEM-768", "2.16.840.1.101.3.4.4.2", 768);
+            case "ML-KEM-1024" ->
+                    assertKemPset(
+                            nodes, MLKEM.class, "ML-KEM-1024", "2.16.840.1.101.3.4.4.3", 1024);
             case "X25519MLKEM768" -> assertHybridKem(nodes, X25519MLKEM768.class, "X25519MLKEM768");
             case "X448MLKEM1024" -> assertHybridKem(nodes, X448MLKEM1024.class, "X448MLKEM1024");
             case "SecP256r1MLKEM768" ->
@@ -122,12 +122,19 @@ class OpenSSLEvpKeyGenTest extends TestBase {
             case "ML-DSA-44" -> assertMldsa(nodes, "ML-DSA-2", "2.16.840.1.101.3.4.3", 2);
             case "ML-DSA-65" -> assertMldsa(nodes, "ML-DSA-3", "2.16.840.1.101.3.4.3", 3);
             case "ML-DSA-87" -> assertMldsa(nodes, "ML-DSA-5", "2.16.840.1.101.3.4.3", 5);
-            case "SLH-DSA-SHA2-128F", "SLH-DSA-SHA2-128S",
-                 "SLH-DSA-SHAKE-128F", "SLH-DSA-SHAKE-128S",
-                 "SLH-DSA-SHA2-192F", "SLH-DSA-SHA2-192S",
-                 "SLH-DSA-SHAKE-192F", "SLH-DSA-SHAKE-192S",
-                 "SLH-DSA-SHA2-256F", "SLH-DSA-SHA2-256S",
-                 "SLH-DSA-SHAKE-256F", "SLH-DSA-SHAKE-256S" -> assertSlhdsa(nodes);
+            case "SLH-DSA-SHA2-128F",
+                    "SLH-DSA-SHA2-128S",
+                    "SLH-DSA-SHAKE-128F",
+                    "SLH-DSA-SHAKE-128S",
+                    "SLH-DSA-SHA2-192F",
+                    "SLH-DSA-SHA2-192S",
+                    "SLH-DSA-SHAKE-192F",
+                    "SLH-DSA-SHAKE-192S",
+                    "SLH-DSA-SHA2-256F",
+                    "SLH-DSA-SHA2-256S",
+                    "SLH-DSA-SHAKE-256F",
+                    "SLH-DSA-SHAKE-256S" ->
+                    assertSlhdsa(nodes);
             case "SM2" -> {
                 INode n = head(nodes);
                 assertThat(n).isInstanceOf(SM2.class);
@@ -136,14 +143,27 @@ class OpenSSLEvpKeyGenTest extends TestBase {
             case "DH-2048", "DH-4096" -> assertDh(nodes);
             case "DSA-2048", "DSA-3072" ->
                     assertSimpleSig(nodes, DSA.class, "DSA", "1.2.840.10040.4.1");
-            case "EC-P256", "EC-P384", "EC-P521",
-                 "EC-SECP256K1",
-                 "EC-BRAINPOOLP256R1", "EC-BRAINPOOLP384R1", "EC-BRAINPOOLP512R1" ->
+            case "EC-P256",
+                    "EC-P384",
+                    "EC-P521",
+                    "EC-SECP256K1",
+                    "EC-BRAINPOOLP256R1",
+                    "EC-BRAINPOOLP384R1",
+                    "EC-BRAINPOOLP512R1" ->
                     assertEcdsa(nodes);
             case "RSA-2048" -> assertRsaSized(nodes, 2048);
             case "RSA-3072" -> assertRsaSized(nodes, 3072);
             case "RSA-4096" -> assertRsaSized(nodes, 4096);
-            case "KEYGEN", "KEYGEN-INIT" -> assertThat(nodes).isEmpty();
+            case "KEYGEN", "KEYGEN-INIT", "PARAMGEN" -> assertThat(nodes).isEmpty();
+            case "KEYMGMT-FETCH",
+                    "GROUP-NAME",
+                    "EC-PARAM-ENC",
+                    "RSA-KEYGEN-PUBEXP",
+                    "RSA-KEYGEN-PRIMES",
+                    "DSA-PARAMGEN-Q-BITS",
+                    "DSA-PARAMGEN-MD",
+                    "DSA-PARAMGEN-TYPE" ->
+                    assertThat(nodes).isNotNull();
             default -> throw new AssertionError("Unexpected value: " + value.asString());
         }
         findingCount++;

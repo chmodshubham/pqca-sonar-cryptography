@@ -67,8 +67,8 @@ class OpenSSLLegacyCipherTest extends TestBase {
     @Test
     void test() {
         CxxVerifier.verify("rules/detection/openssl/legacy/OpenSSLLegacyCipherTestFile.cc", this);
-        assertThat(findingCount).isEqualTo(47);
-        assertThat(observed).hasSize(37);
+        assertThat(findingCount).isEqualTo(56);
+        assertThat(observed).hasSize(53);
     }
 
     @Override
@@ -106,8 +106,15 @@ class OpenSSLLegacyCipherTest extends TestBase {
         } else if (v.startsWith("IDEA-")) {
             String mode = v.substring("IDEA-".length());
             assertIdea(nodes, mode);
+        } else if (v.startsWith("RC5-")) {
+            assertThat(nodes).isNotNull();
+        } else if (v.startsWith("CAMELLIA-")) {
+            assertThat(nodes).isNotNull();
+        } else if (v.startsWith("SEED-")) {
+            assertThat(nodes).isNotNull();
         } else {
-            // Bare names (AES, AES-ECB, AES-CBC, ..., DES, 3DES-*, BLOWFISH, RC2, CAST5, IDEA)
+            // Bare names (AES, AES-ECB, AES-CBC, ..., DES, 3DES-*, BLOWFISH, RC2, CAST5, IDEA, RC5,
+            // CAMELLIA, SEED)
             // and AES-WRAP/IGE — translator has no case → empty nodes.
             assertThat(nodes).isEmpty();
         }

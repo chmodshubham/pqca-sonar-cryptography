@@ -632,32 +632,6 @@ public final class OpenSSLEvpKdf {
                     .withoutDependingDetectionRules();
 
     // ====================================================================
-    // PBKDF1 - Password-Based Key Derivation Function 1 (legacy)
-    // ====================================================================
-
-    private static final IDetectionRule<AstNode> PBKDF1_MD5 =
-            new DetectionRuleBuilder<AstNode>()
-                    .createDetectionRule()
-                    .forObjectTypes("*")
-                    .forMethods("PKCS5_PBKDF1_MD5")
-                    .shouldBeDetectedAs(new ValueActionFactory<>("PBKDF1-MD5"))
-                    .withAnyParameters()
-                    .buildForContext(new KeyDerivationFunctionContext())
-                    .inBundle(() -> BUNDLE)
-                    .withoutDependingDetectionRules();
-
-    private static final IDetectionRule<AstNode> PBKDF1_SHA1 =
-            new DetectionRuleBuilder<AstNode>()
-                    .createDetectionRule()
-                    .forObjectTypes("*")
-                    .forMethods("PKCS5_PBKDF1_SHA1")
-                    .shouldBeDetectedAs(new ValueActionFactory<>("PBKDF1-SHA1"))
-                    .withAnyParameters()
-                    .buildForContext(new KeyDerivationFunctionContext())
-                    .inBundle(() -> BUNDLE)
-                    .withoutDependingDetectionRules();
-
-    // ====================================================================
     // Legacy PBKDF2 functions
     // ====================================================================
 
@@ -678,6 +652,224 @@ public final class OpenSSLEvpKdf {
                     .forObjectTypes("*")
                     .forMethods("PKCS5_PBKDF2_HMAC_SHA1")
                     .shouldBeDetectedAs(new ValueActionFactory<>("PBKDF2-HMAC-SHA1"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    // ====================================================================
+    // HKDF setters
+    // ====================================================================
+
+    private static final IDetectionRule<AstNode> EVP_PKEY_CTX_SET_HKDF_MD =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("EVP_PKEY_CTX_set_hkdf_md")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("HKDF-MD"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> EVP_PKEY_CTX_SET_HKDF_MODE =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("EVP_PKEY_CTX_set_hkdf_mode")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("HKDF-MODE"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    // ====================================================================
+    // TLS1-PRF setters
+    // ====================================================================
+
+    private static final IDetectionRule<AstNode> EVP_PKEY_CTX_SET_TLS1_PRF_MD =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("EVP_PKEY_CTX_set_tls1_prf_md")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("TLS1-PRF-MD"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    // ====================================================================
+    // PKCS#12 KDF / MAC entry points
+    // ====================================================================
+
+    private static final IDetectionRule<AstNode> PKCS12_CREATE =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_create")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_CREATE_EX =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_create_ex")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_CREATE_EX2 =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_create_ex2")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_SET_MAC =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_set_mac")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12-MAC"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_PBE_KEYIVGEN =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_PBE_keyivgen")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12-PBE"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_PBE_KEYIVGEN_EX =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_PBE_keyivgen_ex")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12-PBE"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_KEY_GEN_ASC =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_key_gen_asc")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12-KDF"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_KEY_GEN_ASC_EX =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_key_gen_asc_ex")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12-KDF"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_KEY_GEN_UNI =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_key_gen_uni")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12-KDF"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_KEY_GEN_UNI_EX =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_key_gen_uni_ex")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12-KDF"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_KEY_GEN_UTF8 =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_key_gen_utf8")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12-KDF"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS12_KEY_GEN_UTF8_EX =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS12_key_gen_utf8_ex")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PKCS12-KDF"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    // ====================================================================
+    // EVP_KDF CTX/derive
+    // ====================================================================
+
+    private static final IDetectionRule<AstNode> EVP_KDF_CTX_NEW =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("EVP_KDF_CTX_new")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("KDF-CTX"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    // ====================================================================
+    // PKCS5 PBE keyivgen (legacy)
+    // ====================================================================
+
+    private static final IDetectionRule<AstNode> PKCS5_PBE_KEYIVGEN =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS5_PBE_keyivgen")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PBE-KEYIVGEN"))
+                    .withAnyParameters()
+                    .buildForContext(new KeyDerivationFunctionContext())
+                    .inBundle(() -> BUNDLE)
+                    .withoutDependingDetectionRules();
+
+    private static final IDetectionRule<AstNode> PKCS5_PBE_KEYIVGEN_EX =
+            new DetectionRuleBuilder<AstNode>()
+                    .createDetectionRule()
+                    .forObjectTypes("*")
+                    .forMethods("PKCS5_PBE_keyivgen_ex")
+                    .shouldBeDetectedAs(new ValueActionFactory<>("PBE-KEYIVGEN"))
                     .withAnyParameters()
                     .buildForContext(new KeyDerivationFunctionContext())
                     .inBundle(() -> BUNDLE)
@@ -746,11 +938,31 @@ public final class OpenSSLEvpKdf {
                 PKCS12KDF,
                 // PVKKDF
                 PVKKDF,
-                // PBKDF1 (legacy)
-                PBKDF1_MD5,
-                PBKDF1_SHA1,
                 // Legacy PBKDF2
                 PKCS5_PBKDF2_HMAC,
-                PKCS5_PBKDF2_HMAC_SHA1);
+                PKCS5_PBKDF2_HMAC_SHA1,
+                // HKDF setters
+                EVP_PKEY_CTX_SET_HKDF_MD,
+                EVP_PKEY_CTX_SET_HKDF_MODE,
+                // TLS1-PRF setters
+                EVP_PKEY_CTX_SET_TLS1_PRF_MD,
+                // PKCS5 PBE keyivgen (legacy)
+                PKCS5_PBE_KEYIVGEN,
+                PKCS5_PBE_KEYIVGEN_EX,
+                // EVP_KDF CTX/derive
+                EVP_KDF_CTX_NEW,
+                // PKCS#12 KDF / MAC
+                PKCS12_CREATE,
+                PKCS12_CREATE_EX,
+                PKCS12_CREATE_EX2,
+                PKCS12_SET_MAC,
+                PKCS12_PBE_KEYIVGEN,
+                PKCS12_PBE_KEYIVGEN_EX,
+                PKCS12_KEY_GEN_ASC,
+                PKCS12_KEY_GEN_ASC_EX,
+                PKCS12_KEY_GEN_UNI,
+                PKCS12_KEY_GEN_UNI_EX,
+                PKCS12_KEY_GEN_UTF8,
+                PKCS12_KEY_GEN_UTF8_EX);
     }
 }

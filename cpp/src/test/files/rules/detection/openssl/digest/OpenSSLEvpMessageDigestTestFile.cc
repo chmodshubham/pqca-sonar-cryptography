@@ -25,4 +25,9 @@ void test_evp_message_digest() {
     EVP_sm3();
     EVP_md5_sha1();
     EVP_md_null();
+    EVP_MD_fetch(NULL, "SHA256", NULL);
+    EVP_get_digestbyname("SHA256");
+    EVP_DigestInit(NULL, NULL);
+    EVP_DigestInit_ex(NULL, NULL, NULL);
+    EVP_DigestInit_ex2(NULL, NULL, NULL);
 }

@@ -28,8 +28,13 @@ import com.ibm.mapper.model.BlockSize;
 import com.ibm.mapper.model.DigestSize;
 import com.ibm.mapper.model.INode;
 import com.ibm.mapper.model.MessageDigest;
+import com.ibm.mapper.model.algorithms.MD2;
+import com.ibm.mapper.model.algorithms.MD4;
 import com.ibm.mapper.model.algorithms.MD5;
 import com.ibm.mapper.model.algorithms.RIPEMD;
+import com.ibm.mapper.model.algorithms.SHA;
+import com.ibm.mapper.model.algorithms.SHA2;
+import com.ibm.mapper.model.algorithms.Whirlpool;
 import com.ibm.plugin.CxxVerifier;
 import com.ibm.plugin.TestBase;
 import com.sonar.cxx.sslr.api.AstNode;
@@ -42,7 +47,7 @@ import org.sonar.cxx.squidbridge.api.Symbol;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 /**
- * Covers all 28 rule entries in {@link OpenSSLLegacyDigest}.
+ * Covers all 47 rule entries in {@link OpenSSLLegacyDigest}.
  *
  * <p>Follows the deep-assert pattern documented in {@link
  * com.ibm.plugin.rules.detection.openssl.rand.OpenSSLRandTest}.
@@ -74,21 +79,47 @@ class OpenSSLLegacyDigestTest extends TestBase {
         assertThat(detectionStore.getDetectionValueContext()).isInstanceOf(DigestContext.class);
         IValue<AstNode> value = detectionStore.getDetectionValues().get(0);
 
-        switch (findingId) {
-            case 0, 1, 2, 3 -> {
-                assertThat(value.asString()).isEqualTo("MD5");
-                assertMd5(nodes);
+        switch (value.asString()) {
+            case "MD5" -> assertMd5(nodes);
+            case "SHA1", "SHA224", "SHA256", "SHA384", "SHA512" -> assertThat(nodes).isEmpty();
+            case "RIPEMD160" -> assertRipemd160(nodes);
+            case "SHA-1" -> {
+                assertThat(nodes).hasSize(1);
+                assertThat(nodes.get(0)).isInstanceOf(SHA.class);
+                assertThat(nodes.get(0).getKind()).isEqualTo(MessageDigest.class);
             }
-            case 4, 5, 6, 7 -> assertEmpty(value, "SHA1", nodes);
-            case 8, 9, 10, 11 -> assertEmpty(value, "SHA224", nodes);
-            case 12, 13, 14, 15 -> assertEmpty(value, "SHA256", nodes);
-            case 16, 17, 18, 19 -> assertEmpty(value, "SHA384", nodes);
-            case 20, 21, 22, 23 -> assertEmpty(value, "SHA512", nodes);
-            case 24, 25, 26, 27 -> {
-                assertThat(value.asString()).isEqualTo("RIPEMD160");
-                assertRipemd160(nodes);
+            case "SHA-256" -> {
+                assertThat(nodes).hasSize(1);
+                assertThat(nodes.get(0)).isInstanceOf(SHA2.class);
+                assertThat(nodes.get(0).asString()).isEqualTo("SHA256");
             }
-            default -> throw new AssertionError("Unexpected findingId: " + findingId);
+            case "SHA-512" -> {
+                assertThat(nodes).hasSize(1);
+                assertThat(nodes.get(0)).isInstanceOf(SHA2.class);
+                assertThat(nodes.get(0).asString()).isEqualTo("SHA512");
+            }
+            case "WHIRLPOOL" -> {
+                assertThat(nodes).hasSize(1);
+                assertThat(nodes.get(0)).isInstanceOf(Whirlpool.class);
+                assertThat(nodes.get(0).getKind()).isEqualTo(MessageDigest.class);
+            }
+            case "MD2" -> {
+                assertThat(nodes).hasSize(1);
+                assertThat(nodes.get(0)).isInstanceOf(MD2.class);
+                assertThat(nodes.get(0).getKind()).isEqualTo(MessageDigest.class);
+            }
+            case "MD4" -> {
+                assertThat(nodes).hasSize(1);
+                assertThat(nodes.get(0)).isInstanceOf(MD4.class);
+                assertThat(nodes.get(0).getKind()).isEqualTo(MessageDigest.class);
+            }
+            case "MDC2" -> {
+                assertThat(nodes).hasSize(1);
+                INode n = nodes.get(0);
+                assertThat(n.getKind()).isEqualTo(MessageDigest.class);
+                assertThat(n.asString()).isEqualTo("MDC2");
+            }
+            default -> throw new AssertionError("Unexpected value: " + value.asString());
         }
     }
 

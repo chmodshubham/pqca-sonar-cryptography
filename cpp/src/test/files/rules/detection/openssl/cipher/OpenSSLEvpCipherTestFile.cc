@@ -2,6 +2,7 @@
 
 void test_evp_cipher() {
     EVP_PKEY_CTX* ctx = NULL;
+    EVP_CIPHER_CTX* cctx = NULL;
     unsigned char buf[64];
     size_t len = 0;
 
@@ -96,9 +97,6 @@ void test_evp_cipher() {
     EVP_sm4_cfb128();
     EVP_sm4_ofb();
     EVP_sm4_ctr();
-    EVP_sm4_gcm();
-    EVP_sm4_ccm();
-    EVP_sm4_xts();
     EVP_des_cbc();
     EVP_des_ecb();
     EVP_des_ede3_cbc();
@@ -154,6 +152,39 @@ void test_evp_cipher() {
     EVP_aes_128_cbc_hmac_sha256();
     EVP_aes_256_cbc_hmac_sha256();
     EVP_PKEY_encrypt(ctx, buf, &len, buf, 64);
+    EVP_PKEY_encrypt_init(ctx);
+    EVP_PKEY_encrypt_init_ex(ctx, NULL);
     EVP_PKEY_decrypt(ctx, buf, &len, buf, 64);
+    EVP_PKEY_decrypt_init(ctx);
+    EVP_PKEY_decrypt_init_ex(ctx, NULL);
+    EVP_PKEY_CTX_set_rsa_padding(ctx, 4);
+    EVP_PKEY_CTX_set_rsa_oaep_md(ctx, NULL);
+    EVP_PKEY_CTX_set_rsa_oaep_md_name(ctx, "SHA256", NULL);
+    EVP_PKEY_CTX_set0_rsa_oaep_label(ctx, buf, 16);
+    EVP_EncryptInit(cctx, NULL, buf, buf);
+    EVP_EncryptInit_ex(cctx, NULL, NULL, buf, buf);
+    EVP_EncryptInit_ex2(cctx, NULL, buf, buf, NULL);
+    EVP_DecryptInit(cctx, NULL, buf, buf);
+    EVP_DecryptInit_ex(cctx, NULL, NULL, buf, buf);
+    EVP_DecryptInit_ex2(cctx, NULL, buf, buf, NULL);
+    EVP_CipherInit(cctx, NULL, buf, buf, 1);
+    EVP_CipherInit_ex(cctx, NULL, NULL, buf, buf, 1);
+    EVP_CipherInit_ex2(cctx, NULL, buf, buf, 1, NULL);
+    EVP_ASYM_CIPHER_fetch(NULL, "RSA", NULL);
+    EVP_get_cipherbyname("AES-256-GCM");
+    EVP_des_ede3_wrap();
     EVP_enc_null();
+    CMS_encrypt(NULL, buf, NULL, NULL);
+    CMS_encrypt_ex(NULL, buf, NULL, NULL, NULL, 0);
+    CMS_EnvelopedData_create(NULL);
+    CMS_EnvelopedData_create_ex(NULL, NULL, NULL);
+    CMS_AuthEnvelopedData_create(NULL);
+    CMS_AuthEnvelopedData_create_ex(NULL, NULL, NULL);
+    CMS_EncryptedData_encrypt(NULL, buf, NULL, 16, 0);
+    CMS_EncryptedData_encrypt_ex(NULL, buf, NULL, 16, 0, NULL, NULL);
+    CMS_EncryptedData_set1_key(NULL, NULL, buf, 32);
+    CMS_add0_recipient_key(NULL, 0, buf, 16, buf, 8, NULL, NULL, NULL);
+    PKCS7_encrypt(NULL, buf, NULL, 0);
+    PKCS7_encrypt_ex(NULL, buf, NULL, 0, NULL, NULL);
+    PKCS7_set_cipher(NULL, NULL);
 }
